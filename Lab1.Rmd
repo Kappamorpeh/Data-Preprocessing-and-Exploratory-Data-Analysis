@@ -1,0 +1,100 @@
+---
+title: "Lab1"
+author: "Denys Kushnirenko"
+date: "2023-09-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Calculate the measures of central tendency: mean, median.
+
+```{r, echo=FALSE}
+drug_deaths <- read.csv(".\\drug_deaths.csv")
+```
+```{r}
+mean(drug_deaths$Age,na.rm=T)
+median(drug_deaths$Age,na.rm=T)
+```
+## 2. Calculate the measures of variability: variance, standard deviation, coefficient of variation, range of variation and interquartile range.
+
+```{r}
+var(drug_deaths$Age,na.rm=T)
+sd(drug_deaths$Age,na.rm=T)
+sd(drug_deaths$Age,na.rm=T)/mean(drug_deaths$Age,na.rm=T)
+max(drug_deaths$Age,na.rm=T)-min(drug_deaths$Age,na.rm=T)
+IQR(drug_deaths$Age,na.rm=T)
+```
+
+## 3. Create Box and Whisker plot
+
+```{r}
+boxplot(drug_deaths$Age, ylab = "Age", main = "Box and Whisker for Age variable")
+```
+
+## 4. Output the five-point summary of a sample (extreme points and quartiles).
+
+```{r}
+summary(drug_deaths$Age,na.rm=T)
+```
+
+## 5. Find the 1st and 9th deciles (without intermediate).
+
+```{r}
+decile <- quantile(drug_deaths$Age, seq(0,1,.1),na.rm=T)
+cat("first decile =",decile[2],"\nnineth decile =",decile[10])
+```
+
+## 6. Calculate the skewness coefficient and the excess coefficient.
+
+```{r}
+library(EnvStats)
+skewness(drug_deaths$Age,na.rm=T) 
+kurtosis(drug_deaths$Age,na.rm=T)
+```
+
+## 7. Construct a histogram using different binning methods (basic rule, Scott's rule, Friedman-Diaconis rule). On the same graph, plot the density estimate and the density plot of the hypothesized distribution. Formulate assumptions about the type of distribution observed.
+
+```{r,echo=FALSE}
+library(gamlss)
+```
+```{r}
+hist(drug_deaths$Age, freq=F, xlab = "Age", ylab='Relative frequency',
+     main="Sturges rule", col = "blue")
+hist(drug_deaths$Age, breaks = "Scott", freq=F, xlab = "Age",
+     ylab='Relative frequency', main="Scott's rule", col = "red")
+hist(drug_deaths$Age, breaks = "freedman-diaconis", freq=F, xlab = "Age",
+     ylab='Relative frequency', main="Friedman-Diaconis rule", col = "darkgreen")
+histDist(na.omit(drug_deaths$Age), family = "NO", density = TRUE)
+lines(density(na.omit(drug_deaths$Age), na.rm = T), col='blue', lwd=1)
+```
+
+## 8. Plot a Q-Q plot to check for agreement with the hypothesized distribution.
+
+```{r}
+qqnorm(drug_deaths$Age, col="darkblue")
+qqline(drug_deaths$Age, lwd = 2)
+```
+
+## 9. Plot a P-P plot to check for agreement with the hypothesized distribution.
+
+```{r,echo=FALSE}
+library(ggplot2)
+library(qqplotr)
+library(nortest)
+```
+```{r}
+dp <- list(mean = 41.96, sd = 12.34)
+ggplot(data = drug_deaths, mapping = aes(sample = Age)) +
+  stat_pp_band(dparams = dp) +
+  stat_pp_line() +
+  stat_pp_point(dparams = dp) +
+  labs(x = "Probability Points", y = "Cumulative Probability")
+```
+
+## 10. Use one of the statistical tests to check for agreement with the hypothesized distribution.
+```{r}
+lillie.test(drug_deaths$Age)
+```
